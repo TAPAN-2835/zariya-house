@@ -1,4 +1,3 @@
-
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { ZMonogram } from "@/components/brand/Logo";

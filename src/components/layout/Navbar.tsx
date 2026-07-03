@@ -1,10 +1,12 @@
 "use client";
-import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, Search, X, ChevronRight } from "lucide-react";
+import { Menu, Search, ChevronRight, X } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { MEGA_MENUS, TOP_LINKS } from "@/data/navigation";
+import { DESIGNS } from "@/data/designs";
+import { COLLECTIONS } from "@/data/collections";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
@@ -68,16 +70,7 @@ export function Navbar() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Link
-            to="/search"
-            aria-label="Search"
-            className={cn(
-              "hidden rounded-full p-2 transition-colors md:inline-flex",
-              solid ? "text-charcoal hover:bg-secondary" : "text-ivory hover:bg-ivory/10",
-            )}
-          >
-            <Search size={18} />
-          </Link>
+          <SearchDropdown solid={solid} />
           <Link
             to="/book-consultation"
             className="hidden lg:inline-flex items-center gap-2 rounded-none border border-wine bg-wine px-5 py-2.5 text-[0.72rem] font-medium uppercase tracking-[0.28em] text-ivory transition-all hover:bg-wine-deep hover:shadow-lg"
@@ -234,6 +227,149 @@ function MobileMenu() {
           Book Consultation
         </Link>
       </div>
+    </div>
+  );
+}
+
+type Suggestion = { type: "design" | "collection" | "category"; label: string; sub?: string; to: string };
+
+const STATIC_SUGGESTIONS: Suggestion[] = [
+  { type: "category", label: "Gold", sub: "Material", to: "/category/material/gold" },
+  { type: "category", label: "Silver", sub: "Material", to: "/category/material/silver" },
+  { type: "category", label: "Rose Gold", sub: "Material", to: "/category/material/rose-gold" },
+  { type: "category", label: "Platinum", sub: "Material", to: "/category/material/platinum" },
+  { type: "category", label: "Rings", sub: "Category", to: "/category/rings" },
+  { type: "category", label: "Necklaces", sub: "Category", to: "/category/necklaces" },
+  { type: "category", label: "Earrings", sub: "Category", to: "/category/earrings" },
+  { type: "category", label: "Bridal", sub: "Journey", to: "/bridal" },
+  { type: "category", label: "Men's Rings", sub: "Category", to: "/category/rings/mens" },
+  { type: "category", label: "Couple Rings", sub: "Category", to: "/category/rings/couple" },
+];
+
+function SearchDropdown({ solid }: { solid: boolean }) {
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+  const [active, setActive] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+
+  const results: Suggestion[] = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    if (!term) return STATIC_SUGGESTIONS.slice(0, 6);
+    const dSug: Suggestion[] = DESIGNS.filter((d) =>
+      [d.name, d.material, d.category, ...d.style, ...d.occasion].join(" ").toLowerCase().includes(term),
+    )
+      .slice(0, 5)
+      .map((d) => ({ type: "design", label: d.name, sub: d.category, to: `/design/${d.slug}` }));
+    const cSug: Suggestion[] = COLLECTIONS.filter((c) => c.title.toLowerCase().includes(term))
+      .slice(0, 3)
+      .map((c) => ({ type: "collection", label: c.title, sub: "Collection", to: `/collections/${c.slug}` }));
+    const catSug = STATIC_SUGGESTIONS.filter((s) => s.label.toLowerCase().includes(term)).slice(0, 3);
+    return [...cSug, ...catSug, ...dSug].slice(0, 8);
+  }, [q]);
+
+  useEffect(() => {
+    if (open) setTimeout(() => inputRef.current?.focus(), 50);
+    else { setQ(""); setActive(0); }
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("keydown", onKey);
+    return () => { document.removeEventListener("mousedown", onDoc); document.removeEventListener("keydown", onKey); };
+  }, [open]);
+
+  const go = (s: Suggestion) => { setOpen(false); navigate(s.to); };
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "ArrowDown") { e.preventDefault(); setActive((a) => Math.min(a + 1, results.length - 1)); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); setActive((a) => Math.max(a - 1, 0)); }
+    else if (e.key === "Enter") {
+      e.preventDefault();
+      const s = results[active];
+      if (s) go(s);
+      else if (q.trim()) { setOpen(false); navigate("/search"); }
+    }
+  };
+
+  return (
+    <div ref={wrapRef} className="relative">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        aria-label="Search"
+        aria-expanded={open}
+        className={cn(
+          "hidden rounded-full p-2 transition-colors md:inline-flex",
+          solid ? "text-charcoal hover:bg-secondary" : "text-ivory hover:bg-ivory/10",
+        )}
+      >
+        <Search size={18} />
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.18 }}
+            className="absolute right-0 top-[calc(100%+8px)] z-50 w-[min(92vw,420px)] border border-border bg-ivory shadow-2xl"
+            role="dialog"
+            aria-label="Search"
+          >
+            <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+              <Search size={16} className="text-charcoal/60" />
+              <input
+                ref={inputRef}
+                value={q}
+                onChange={(e) => { setQ(e.target.value); setActive(0); }}
+                onKeyDown={onKeyDown}
+                placeholder="Search rings, necklaces, gold, bridal…"
+                aria-label="Search designs"
+                aria-autocomplete="list"
+                className="w-full bg-transparent text-sm text-charcoal outline-none placeholder:text-charcoal/40"
+              />
+              <button onClick={() => setOpen(false)} aria-label="Close" className="text-charcoal/60 hover:text-charcoal">
+                <X size={16} />
+              </button>
+            </div>
+            <ul role="listbox" className="max-h-[60vh] overflow-y-auto py-2">
+              {results.length ? results.map((s, i) => (
+                <li key={`${s.to}-${i}`}>
+                  <button
+                    onMouseEnter={() => setActive(i)}
+                    onClick={() => go(s)}
+                    role="option"
+                    aria-selected={i === active}
+                    className={cn(
+                      "flex w-full items-center justify-between gap-4 px-4 py-2.5 text-left transition-colors",
+                      i === active ? "bg-secondary" : "hover:bg-secondary/60",
+                    )}
+                  >
+                    <div>
+                      <div className="text-sm text-charcoal">{s.label}</div>
+                      {s.sub && <div className="text-[0.65rem] uppercase tracking-[0.22em] text-charcoal/50">{s.sub}</div>}
+                    </div>
+                    <ChevronRight size={14} className="text-charcoal/40" />
+                  </button>
+                </li>
+              )) : (
+                <li className="px-4 py-6 text-center text-sm text-muted-foreground">No matches — try a broader term.</li>
+              )}
+            </ul>
+            <div className="border-t border-border px-4 py-2">
+              <Link to="/search" onClick={() => setOpen(false)} className="text-[0.7rem] uppercase tracking-[0.28em] text-wine hover:text-wine-deep">
+                Open full search →
+              </Link>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

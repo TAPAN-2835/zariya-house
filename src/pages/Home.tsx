@@ -48,8 +48,10 @@ function Hero() {
           fetchPriority="high"
         />
       </motion.div>
+      {/* Layered overlays for readable hero text */}
       <div className="absolute inset-0 bg-[var(--gradient-hero-overlay)]" />
-      <div className="absolute inset-0 bg-gradient-to-r from-wine-deep/60 via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-charcoal/60 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-r from-wine-deep/75 via-wine-deep/30 to-transparent" />
 
       {/* Sparkles */}
       {[...Array(12)].map((_, i) => (
@@ -70,15 +72,20 @@ function Hero() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.7, duration: 1, ease: [0.22, 1, 0.36, 1] }}
+          style={{ textShadow: "0 2px 24px rgba(0,0,0,0.55)" }}
         >
           <div className="mb-6 flex items-center gap-3">
             <ZMonogram size={44} />
             <div className="eyebrow text-gold-soft">A Design Showcase</div>
           </div>
-          <h1 className="serif-display max-w-3xl text-5xl leading-[1.05] text-ivory md:text-6xl lg:text-7xl">
-            Jewellery Designs for <em className="text-gold-soft">Every Story</em> You Carry
+          <h1 className="serif-display max-w-3xl text-4xl leading-[1.05] text-ivory sm:text-5xl md:text-6xl lg:text-7xl">
+            Jewellery Designs for{" "}
+            <em className="bg-gradient-to-r from-[#F5D68A] via-[#E9C46A] to-[#F5D68A] bg-clip-text not-italic text-transparent drop-shadow-[0_2px_10px_rgba(0,0,0,0.45)]">
+              Every Story
+            </em>{" "}
+            You Carry
           </h1>
-          <p className="mt-6 max-w-xl text-lg text-ivory/85">
+          <p className="mt-6 max-w-xl text-base text-ivory/90 sm:text-lg">
             Explore curated gold, silver, rose gold and platinum ornaments — crafted for weddings, celebrations and the quiet, everyday elegance in between.
           </p>
           <div className="mt-10 flex flex-wrap gap-3">

@@ -1,5 +1,4 @@
-import { useParams } from "react-router-dom";
-
+import { Link, useParams } from "react-router-dom";
 import { COLLECTIONS } from "@/data/collections";
 import { DESIGNS } from "@/data/designs";
 import { PageBanner, Breadcrumbs } from "@/components/layout/PageParts";
@@ -10,7 +9,16 @@ import { LuxButton } from "@/components/ui/lux-button";
 function CollectionDetail() {
   const { slug } = useParams();
   const collection = COLLECTIONS.find((x) => x.slug === slug);
-  if (!collection) return <div className="min-h-screen grid place-items-center"><div className="text-center serif-display text-2xl">Collection not found</div></div>;
+
+  if (!collection) return (
+    <div className="grid min-h-screen place-items-center">
+      <div className="text-center">
+        <div className="serif-display text-3xl">Collection not found</div>
+        <LuxButton href="/collections" variant="outline-gold" className="mt-6">View all collections</LuxButton>
+      </div>
+    </div>
+  );
+
   const designs = DESIGNS.filter((d) => d.collectionSlug === collection.slug);
   const related = DESIGNS.filter((d) => d.collectionSlug !== collection.slug).slice(0, 4);
 

@@ -1,18 +1,85 @@
 import { Link, useParams } from "react-router-dom";
-
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Heart, Share2, Download, MessageCircle, Sparkles, ImageIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Heart, Share2, Download, MessageCircle, Sparkles, ImageIcon, X, Play } from "lucide-react";
 import { DESIGNS, findDesign } from "@/data/designs";
 import { Breadcrumbs } from "@/components/layout/PageParts";
 import { DesignCard } from "@/components/DesignCard";
 import { LuxButton } from "@/components/ui/lux-button";
+import { Viewer360 } from "@/components/Viewer360";
+import { SITE, waLink } from "@/data/site";
+
+const SAVED_KEY = "zariya:saved";
 
 function DesignDetail() {
   const { slug } = useParams();
   const design = findDesign(slug!);
-  if (!design) return <div className="min-h-screen grid place-items-center"><div className="text-center serif-display text-2xl">Design not found</div></div>;
+
+  if (!design) return (
+    <div className="grid min-h-screen place-items-center">
+      <div className="text-center">
+        <div className="serif-display text-3xl">Design not found</div>
+        <LuxButton href="/collections" variant="outline-gold" className="mt-6">View collections</LuxButton>
+      </div>
+    </div>
+  );
+
+  return <DesignDetailInner design={design} />;
+}
+
+function DesignDetailInner({ design }: { design: ReturnType<typeof findDesign> & {} }) {
   const [saved, setSaved] = useState(false);
+  const [tab, setTab] = useState<"image" | "360" | "video">("image");
+  const [zoom, setZoom] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const gallery = design.gallery && design.gallery.length ? design.gallery : [design.image];
+  const [activeImg, setActiveImg] = useState(gallery[0]);
+
+  useEffect(() => {
+    try {
+      const list: string[] = JSON.parse(localStorage.getItem(SAVED_KEY) || "[]");
+      setSaved(list.includes(design.slug));
+      const recent: string[] = JSON.parse(localStorage.getItem("zariya:recent") || "[]");
+      const next = [design.slug, ...recent.filter((s) => s !== design.slug)].slice(0, 8);
+      localStorage.setItem("zariya:recent", JSON.stringify(next));
+    } catch {}
+  }, [design.slug]);
+
+  const toggleSave = () => {
+    try {
+      const list: string[] = JSON.parse(localStorage.getItem(SAVED_KEY) || "[]");
+      const next = saved ? list.filter((s) => s !== design.slug) : [...list, design.slug];
+      localStorage.setItem(SAVED_KEY, JSON.stringify(next));
+      setSaved(!saved);
+    } catch {}
+  };
+
+  const shareUrl = typeof window !== "undefined" ? window.location.href : `/design/${design.slug}`;
+  const shareText = `${design.name} — ${SITE.name}`;
+
+  const onShare = async () => {
+    try {
+      if (typeof navigator !== "undefined" && "share" in navigator) {
+        await (navigator as Navigator & { share: (d: ShareData) => Promise<void> }).share({
+          title: shareText,
+          text: design.story,
+          url: shareUrl,
+        });
+        return;
+      }
+    } catch {}
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {}
+  };
+
+  const onPdf = () => {
+    if (typeof window !== "undefined") window.print();
+  };
+
   const similar = DESIGNS.filter((d) => d.slug !== design.slug && d.category === design.category).slice(0, 4);
   if (similar.length < 4) {
     similar.push(...DESIGNS.filter((d) => d.slug !== design.slug && !similar.includes(d)).slice(0, 4 - similar.length));
@@ -39,21 +106,63 @@ function DesignDetail() {
             transition={{ duration: 0.8 }}
             className="relative aspect-[4/5] overflow-hidden bg-secondary"
           >
-            <img src={design.image} alt={design.name} className="h-full w-full object-cover" />
-            <button className="absolute bottom-4 right-4 grid h-11 w-11 place-items-center bg-ivory/90 text-charcoal shadow-md backdrop-blur-sm transition-colors hover:bg-ivory" aria-label="Fullscreen">
-              <ImageIcon size={18} />
-            </button>
+            {tab === "image" && (
+              <>
+                <img src={activeImg} alt={design.name} className="h-full w-full object-cover" />
+                <button
+                  onClick={() => setZoom(true)}
+                  className="absolute bottom-4 right-4 grid h-11 w-11 place-items-center bg-ivory/90 text-charcoal shadow-md backdrop-blur-sm transition-colors hover:bg-ivory"
+                  aria-label="View fullscreen"
+                >
+                  <ImageIcon size={18} />
+                </button>
+              </>
+            )}
+            {tab === "360" && (
+              <div className="grid h-full w-full place-items-center bg-charcoal/5 p-4">
+                <div className="w-full max-w-[560px]">
+                  <Viewer360 primary={design.image} images={gallery.length > 1 ? gallery : undefined} alt={design.name} />
+                </div>
+              </div>
+            )}
+            {tab === "video" && (
+              <div className="grid h-full w-full place-items-center bg-charcoal text-ivory">
+                <div className="text-center">
+                  <div className="mx-auto grid h-16 w-16 place-items-center rounded-full border border-ivory/40">
+                    <Play size={22} />
+                  </div>
+                  <div className="serif-display mt-6 text-2xl">Film coming soon</div>
+                  <p className="mt-2 max-w-xs text-sm text-ivory/70">A short craft film for this piece is being finished at the studio.</p>
+                </div>
+              </div>
+            )}
           </motion.div>
+
           <div className="grid grid-cols-3 gap-3">
-            <div className="aspect-square overflow-hidden bg-secondary">
-              <img src={design.image} alt="" className="h-full w-full object-cover opacity-90" />
-            </div>
-            <div className="grid aspect-square place-items-center border border-dashed border-border text-xs uppercase tracking-widest text-muted-foreground">
+            {gallery.slice(0, 3).map((g: string, i: number) => (
+              <button
+                key={i}
+                onClick={() => { setTab("image"); setActiveImg(g); }}
+                className={`aspect-square overflow-hidden border ${tab === "image" && activeImg === g ? "border-gold" : "border-transparent"}`}
+                aria-label={`View image ${i + 1}`}
+              >
+                <img src={g} alt="" className="h-full w-full object-cover opacity-90 transition-opacity hover:opacity-100" />
+              </button>
+            ))}
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => setTab("360")}
+              className={`aspect-[3/1] border text-xs uppercase tracking-widest ${tab === "360" ? "border-gold bg-gold/5 text-gold-deep" : "border-dashed border-border text-muted-foreground hover:border-gold"}`}
+            >
               360° View
-            </div>
-            <div className="grid aspect-square place-items-center border border-dashed border-border text-xs uppercase tracking-widest text-muted-foreground">
-              Video
-            </div>
+            </button>
+            <button
+              onClick={() => setTab("video")}
+              className={`aspect-[3/1] border text-xs uppercase tracking-widest ${tab === "video" ? "border-gold bg-gold/5 text-gold-deep" : "border-dashed border-border text-muted-foreground hover:border-gold"}`}
+            >
+              Craft Film
+            </button>
           </div>
         </div>
 
@@ -87,20 +196,32 @@ function DesignDetail() {
             </LuxButton>
             <div className="grid grid-cols-2 gap-3">
               <button
-                onClick={() => setSaved((s) => !s)}
+                onClick={toggleSave}
+                aria-pressed={saved}
                 className={`shine-sweep flex items-center justify-center gap-2 border px-4 py-3 text-[0.68rem] font-medium uppercase tracking-[0.24em] transition-all ${saved ? "border-wine bg-wine text-ivory" : "border-gold text-gold-deep hover:bg-gold/10"}`}
               >
                 <Heart size={14} className={saved ? "fill-current" : ""} /> {saved ? "Saved" : "Save to Inspiration"}
               </button>
-              <button className="flex items-center justify-center gap-2 border border-border px-4 py-3 text-[0.68rem] font-medium uppercase tracking-[0.24em] text-charcoal transition-colors hover:border-gold">
-                <Share2 size={14} /> Share
+              <button
+                onClick={onShare}
+                className="flex items-center justify-center gap-2 border border-border px-4 py-3 text-[0.68rem] font-medium uppercase tracking-[0.24em] text-charcoal transition-colors hover:border-gold"
+              >
+                <Share2 size={14} /> {copied ? "Link copied" : "Share"}
               </button>
-              <button className="flex items-center justify-center gap-2 border border-border px-4 py-3 text-[0.68rem] font-medium uppercase tracking-[0.24em] text-charcoal transition-colors hover:border-gold">
+              <button
+                onClick={onPdf}
+                className="flex items-center justify-center gap-2 border border-border px-4 py-3 text-[0.68rem] font-medium uppercase tracking-[0.24em] text-charcoal transition-colors hover:border-gold"
+              >
                 <Download size={14} /> Catalogue PDF
               </button>
-              <button className="flex items-center justify-center gap-2 border border-border px-4 py-3 text-[0.68rem] font-medium uppercase tracking-[0.24em] text-charcoal transition-colors hover:border-gold">
+              <a
+                href={waLink(`Hello Zariya House, I'd love to know more about "${design.name}" (${shareUrl})`)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 border border-border px-4 py-3 text-[0.68rem] font-medium uppercase tracking-[0.24em] text-charcoal transition-colors hover:border-gold"
+              >
                 <MessageCircle size={14} /> WhatsApp
-              </button>
+              </a>
             </div>
           </div>
 
@@ -122,12 +243,44 @@ function DesignDetail() {
         <div className="border border-border bg-secondary/50 p-10 text-center">
           <div className="serif-display text-3xl text-charcoal">Want to see this piece in person?</div>
           <p className="mt-3 text-muted-foreground">Book a private viewing at our studio or online with a stylist.</p>
-          <div className="mt-6 flex justify-center gap-3">
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
             <LuxButton href="/book-consultation" variant="wine">Book Consultation</LuxButton>
             <LuxButton href="/contact" variant="outline-gold">Request More Images</LuxButton>
+            <a
+              href={waLink(`Hi Zariya House — I'd like more details on ${design.name}.`)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 border border-gold px-6 py-3 text-[0.72rem] font-medium uppercase tracking-[0.28em] text-gold-deep hover:bg-gold/10"
+            >
+              <MessageCircle size={14} /> WhatsApp
+            </a>
           </div>
         </div>
       </section>
+
+      <AnimatePresence>
+        {zoom && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] grid place-items-center bg-charcoal/95 p-4"
+            onClick={() => setZoom(false)}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${design.name} fullscreen`}
+          >
+            <button
+              onClick={() => setZoom(false)}
+              aria-label="Close"
+              className="absolute right-6 top-6 grid h-11 w-11 place-items-center border border-ivory/40 text-ivory hover:bg-ivory/10"
+            >
+              <X size={20} />
+            </button>
+            <img src={activeImg} alt={design.name} className="max-h-[90vh] max-w-[90vw] object-contain" />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
