@@ -1,6 +1,6 @@
 import { Link, useParams } from "react-router-dom";
-
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { BROWSE_CATEGORIES, MATERIALS } from "@/data/categories";
 import { DESIGNS } from "@/data/designs";
 import { PageBanner, Breadcrumbs } from "@/components/layout/PageParts";
@@ -70,16 +70,37 @@ function CategoryPage() {
               <div>{designs.length} designs</div>
               <div>Curated by Zariya House</div>
             </div>
-            {designs.length ? (
-              <div className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-                {designs.map((d) => <DesignCard key={d.slug} design={d} />)}
-              </div>
-            ) : (
-              <div className="grid place-items-center border border-border p-16 text-center">
-                <div className="serif-display text-2xl text-charcoal">No pieces match this filter</div>
-                <p className="mt-2 text-muted-foreground">Try changing your material or occasion selection.</p>
-              </div>
-            )}
+            <motion.div layout className="min-h-[400px]">
+              <AnimatePresence mode="popLayout">
+                {designs.length ? (
+                  <motion.div layout className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+                    {designs.map((d) => (
+                      <motion.div
+                        layout
+                        key={d.slug}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <DesignCard design={d} />
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="empty"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="grid place-items-center border border-border p-16 text-center"
+                  >
+                    <div className="serif-display text-2xl text-charcoal">No pieces match this filter</div>
+                    <p className="mt-2 text-muted-foreground">Try changing your material or occasion selection.</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
           </div>
         </div>
 

@@ -7,7 +7,7 @@ export function Preloader() {
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    const t = setTimeout(() => setVisible(false), 1600);
+    const t = setTimeout(() => setVisible(false), 2400);
     return () => clearTimeout(t);
   }, []);
 
@@ -17,7 +17,7 @@ export function Preloader() {
         <motion.div
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.8, ease: [0.65, 0, 0.35, 1] }}
+          transition={{ duration: 1.2, ease: [0.65, 0, 0.35, 1] }}
           className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-ivory"
           aria-hidden={!visible}
         >

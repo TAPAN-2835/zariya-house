@@ -18,11 +18,24 @@ export function Viewer360({ images, primary, alt = "360 view" }: Props) {
   const [index, setIndex] = useState(0);
   const [rotation, setRotation] = useState(0);
   const [dragging, setDragging] = useState(false);
+  const [hovering, setHovering] = useState(false);
   const startX = useRef(0);
   const startState = useRef(0);
   const ref = useRef<HTMLDivElement>(null);
 
   const multi = frames.length > 1;
+
+  useEffect(() => {
+    if (dragging || hovering) return;
+    const interval = setInterval(() => {
+      if (multi) {
+        setIndex((i) => (i + 1) % frames.length);
+      } else {
+        setRotation((r) => r + 0.2); // Very slow subtle rotation for single image
+      }
+    }, 50);
+    return () => clearInterval(interval);
+  }, [dragging, hovering, multi, frames.length]);
 
   useEffect(() => {
     const onUp = () => setDragging(false);
@@ -59,6 +72,8 @@ export function Viewer360({ images, primary, alt = "360 view" }: Props) {
       onMouseMove={(e) => onMove(e.clientX)}
       onTouchStart={(e) => onDown(e.touches[0].clientX)}
       onTouchMove={(e) => onMove(e.touches[0].clientX)}
+      onMouseEnter={() => setHovering(true)}
+      onMouseLeave={() => { setHovering(false); setDragging(false); }}
       role="img"
       aria-label={`${alt} — drag to rotate`}
     >

@@ -18,6 +18,7 @@ function Home() {
   return (
     <div className="overflow-hidden">
       <Hero />
+      <WhyZariyaHouse />
       <MaterialDiscovery />
       <BrowseByDesign />
       <FeaturedCollections />
@@ -95,18 +96,54 @@ function Hero() {
         </motion.div>
       </motion.div>
 
-      {/* Floating parallax card */}
+      {/* Floating parallax cards */}
       <motion.div
-        initial={{ opacity: 0, x: 30 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 2.3, duration: 1 }}
-        className="absolute right-6 top-1/2 hidden -translate-y-1/2 lg:right-10 lg:block"
+        initial={{ opacity: 0, x: 50, y: 30 }}
+        animate={{ opacity: 1, x: 0, y: 0 }}
+        transition={{ delay: 2.3, duration: 1.2, ease: "easeOut" }}
+        className="absolute right-[5%] top-[20%] hidden w-52 -rotate-3 lg:block xl:right-[10%]"
       >
-        <div className="w-56 border border-ivory/30 bg-ivory/10 p-4 backdrop-blur-md">
-          <img src={IMG.design.earrings} alt="Kundan jhumka" className="aspect-square w-full object-cover" />
+        <div className="group border border-ivory/30 bg-ivory/10 p-3 backdrop-blur-md transition-all hover:bg-ivory/20 hover:scale-105 cursor-pointer">
+          <div className="overflow-hidden">
+            <img src={IMG.design.earrings} alt="Kundan jhumka" className="aspect-square w-full object-cover transition-transform duration-700 group-hover:scale-110" />
+          </div>
           <div className="mt-3">
-            <div className="eyebrow text-gold-soft">New</div>
-            <div className="serif-display mt-1 text-lg text-ivory">Rani Kundan Jhumka</div>
+            <div className="eyebrow text-gold-soft">Signature</div>
+            <div className="serif-display mt-1 text-base text-ivory">Rani Kundan Jhumka</div>
+          </div>
+        </div>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, x: -50, y: -30 }}
+        animate={{ opacity: 1, x: 0, y: 0 }}
+        transition={{ delay: 2.6, duration: 1.2, ease: "easeOut" }}
+        className="absolute left-[5%] top-[15%] hidden w-48 rotate-6 lg:block xl:left-[10%]"
+      >
+        <div className="group border border-ivory/30 bg-ivory/10 p-3 backdrop-blur-md transition-all hover:bg-ivory/20 hover:scale-105 cursor-pointer">
+          <div className="overflow-hidden">
+            <img src={IMG.design.ringMacro} alt="Diamond Ring" className="aspect-square w-full object-cover transition-transform duration-700 group-hover:scale-110" />
+          </div>
+          <div className="mt-3">
+            <div className="eyebrow text-gold-soft">Bridal</div>
+            <div className="serif-display mt-1 text-base text-ivory">Eternity Band</div>
+          </div>
+        </div>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 2.9, duration: 1.2, ease: "easeOut" }}
+        className="absolute right-[12%] bottom-[15%] hidden w-48 rotate-2 lg:block"
+      >
+        <div className="group border border-ivory/30 bg-ivory/10 p-3 backdrop-blur-md transition-all hover:bg-ivory/20 hover:scale-105 cursor-pointer">
+          <div className="overflow-hidden">
+            <img src={IMG.design.necklaceMacro} alt="Gold Necklace" className="aspect-square w-full object-cover transition-transform duration-700 group-hover:scale-110" />
+          </div>
+          <div className="mt-3">
+            <div className="eyebrow text-gold-soft">Heritage</div>
+            <div className="serif-display mt-1 text-base text-ivory">Temple Choker</div>
           </div>
         </div>
       </motion.div>
@@ -122,6 +159,47 @@ function Hero() {
           <span className="eyebrow text-[0.55rem] text-ivory/60">Scroll</span>
         </div>
       </motion.div>
+    </section>
+  );
+}
+
+function WhyZariyaHouse() {
+  return (
+    <section className="bg-ivory py-24 lg:py-32">
+      <div className="mx-auto max-w-[1440px] px-6 lg:px-10">
+        <div className="grid gap-16 lg:grid-cols-2 lg:items-center">
+          <div>
+            <div className="eyebrow mb-4 text-gold-deep">The Showroom Experience</div>
+            <h2 className="serif-display text-4xl text-charcoal md:text-5xl">
+              Not just jewellery, but a legacy you wear
+            </h2>
+            <p className="mt-6 text-lg leading-relaxed text-charcoal/80">
+              For over three generations, Zariya House has stood for uncompromising purity, distinct design, and an intimate showroom experience. 
+              We don't just sell ornaments; we co-create heirlooms tailored to your story.
+            </p>
+            <div className="mt-10 grid gap-6 sm:grid-cols-2">
+              {[
+                { title: "Certified Purity", desc: "Every diamond and metal carries international hallmarking." },
+                { title: "Bespoke Design", desc: "Work with our designers to alter or create from scratch." },
+                { title: "Lifetime Polish", desc: "Complimentary polishing for every piece you take home." },
+                { title: "Private Viewings", desc: "Experience the showroom in an exclusive, private appointment." },
+              ].map((b) => (
+                <div key={b.title} className="border-l border-gold pl-4">
+                  <div className="serif-display text-lg text-charcoal">{b.title}</div>
+                  <div className="mt-1 text-sm text-muted-foreground">{b.desc}</div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-12">
+              <LuxButton href="/about" variant="outline-gold">Discover Our Heritage</LuxButton>
+            </div>
+          </div>
+          <div className="relative aspect-square overflow-hidden bg-secondary">
+            <img src={IMG.craftsmanship} alt="Zariya House showroom" className="h-full w-full object-cover opacity-90 transition-transform duration-1000 hover:scale-105" />
+            <div className="absolute inset-0 bg-charcoal/5" />
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
