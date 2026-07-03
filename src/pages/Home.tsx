@@ -103,7 +103,7 @@ function Hero() {
         transition={{ delay: 2.3, duration: 1.2, ease: "easeOut" }}
         className="absolute right-6 top-1/2 -translate-y-1/2 md:right-10 xl:right-16"
       >
-        <div className="group w-56 border border-ivory/30 bg-ivory/10 p-3 backdrop-blur-md transition-all hover:bg-ivory/20 hover:scale-105 cursor-pointer">
+        <div className="group w-40 sm:w-48 md:w-56 border border-ivory/30 bg-ivory/10 p-3 backdrop-blur-md transition-all hover:bg-ivory/20 hover:scale-105 cursor-pointer">
           <div className="overflow-hidden">
             <img src={IMG.design.earrings} alt="Kundan jhumka" className="aspect-square w-full object-cover transition-transform duration-700 group-hover:scale-110" />
           </div>
