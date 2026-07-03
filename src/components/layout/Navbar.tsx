@@ -305,7 +305,7 @@ function SearchDropdown({ solid }: { solid: boolean }) {
         aria-label="Search"
         aria-expanded={open}
         className={cn(
-          "hidden rounded-full p-2 transition-colors md:inline-flex",
+          "inline-flex rounded-full p-2 transition-colors",
           solid ? "text-charcoal hover:bg-secondary" : "text-ivory hover:bg-ivory/10",
         )}
       >
