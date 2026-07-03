@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
   const { pathname } = useLocation();
   const isHome = pathname === "/";
 
@@ -23,7 +24,7 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  useEffect(() => setOpenMenu(null), [pathname]);
+  useEffect(() => { setOpenMenu(null); setSearchOpen(false); }, [pathname]);
 
   const solid = scrolled || !isHome;
 
@@ -70,7 +71,7 @@ export function Navbar() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <SearchDropdown solid={solid} />
+          <SearchDropdown solid={solid} open={searchOpen} setOpen={setSearchOpen} />
           <Link
             to="/book-consultation"
             className="hidden lg:inline-flex items-center gap-2 rounded-none border border-wine bg-wine px-5 py-2.5 text-[0.72rem] font-medium uppercase tracking-[0.28em] text-ivory transition-all hover:bg-wine-deep hover:shadow-lg"
@@ -112,6 +113,13 @@ export function Navbar() {
           >
             <MegaPanel menuKey={openMenu} />
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Search panel — full-width on mobile, right-aligned dropdown on desktop */}
+      <AnimatePresence>
+        {searchOpen && (
+          <SearchPanel open={searchOpen} setOpen={setSearchOpen} />
         )}
       </AnimatePresence>
     </header>
@@ -246,12 +254,26 @@ const STATIC_SUGGESTIONS: Suggestion[] = [
   { type: "category", label: "Couple Rings", sub: "Category", to: "/category/rings/couple" },
 ];
 
-function SearchDropdown({ solid }: { solid: boolean }) {
-  const [open, setOpen] = useState(false);
+function SearchDropdown({ solid, open, setOpen }: { solid: boolean; open: boolean; setOpen: (v: boolean) => void }) {
+  return (
+    <button
+      onClick={() => setOpen(!open)}
+      aria-label="Search"
+      aria-expanded={open}
+      className={cn(
+        "inline-flex rounded-full p-2 transition-colors",
+        solid ? "text-charcoal hover:bg-secondary" : "text-ivory hover:bg-ivory/10",
+      )}
+    >
+      <Search size={18} />
+    </button>
+  );
+}
+
+function SearchPanel({ open, setOpen }: { open: boolean; setOpen: (v: boolean) => void }) {
   const [q, setQ] = useState("");
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   const results: Suggestion[] = useMemo(() => {
@@ -270,20 +292,16 @@ function SearchDropdown({ solid }: { solid: boolean }) {
   }, [q]);
 
   useEffect(() => {
-    if (open) setTimeout(() => inputRef.current?.focus(), 50);
+    if (open) setTimeout(() => inputRef.current?.focus(), 80);
     else { setQ(""); setActive(0); }
   }, [open]);
 
   useEffect(() => {
     if (!open) return;
-    const onDoc = (e: MouseEvent) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
-    };
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
-    document.addEventListener("mousedown", onDoc);
     document.addEventListener("keydown", onKey);
-    return () => { document.removeEventListener("mousedown", onDoc); document.removeEventListener("keydown", onKey); };
-  }, [open]);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open, setOpen]);
 
   const go = (s: Suggestion) => { setOpen(false); navigate(s.to); };
 
@@ -299,77 +317,72 @@ function SearchDropdown({ solid }: { solid: boolean }) {
   };
 
   return (
-    <div ref={wrapRef} className="relative">
-      <button
-        onClick={() => setOpen((o) => !o)}
+    <>
+      {/* Backdrop */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.15 }}
+        className="fixed inset-0 top-20 z-40 bg-charcoal/20 backdrop-blur-[2px] lg:hidden"
+        onClick={() => setOpen(false)}
+      />
+      {/* Panel — full-width below navbar on mobile, right-aligned on desktop */}
+      <motion.div
+        initial={{ opacity: 0, y: -6 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -6 }}
+        transition={{ duration: 0.18 }}
+        className="absolute inset-x-0 top-full z-50 border-t border-border bg-ivory shadow-2xl lg:inset-x-auto lg:right-10 lg:top-[calc(100%+6px)] lg:w-[420px] lg:border"
+        role="dialog"
         aria-label="Search"
-        aria-expanded={open}
-        className={cn(
-          "inline-flex rounded-full p-2 transition-colors",
-          solid ? "text-charcoal hover:bg-secondary" : "text-ivory hover:bg-ivory/10",
-        )}
       >
-        <Search size={18} />
-      </button>
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.18 }}
-            className="absolute right-0 top-[calc(100%+8px)] z-50 w-[min(92vw,420px)] border border-border bg-ivory shadow-2xl"
-            role="dialog"
-            aria-label="Search"
-          >
-            <div className="flex items-center gap-2 border-b border-border px-4 py-3">
-              <Search size={16} className="text-charcoal/60" />
-              <input
-                ref={inputRef}
-                value={q}
-                onChange={(e) => { setQ(e.target.value); setActive(0); }}
-                onKeyDown={onKeyDown}
-                placeholder="Search rings, necklaces, gold, bridal…"
-                aria-label="Search designs"
-                aria-autocomplete="list"
-                className="w-full bg-transparent text-sm text-charcoal outline-none placeholder:text-charcoal/40"
-              />
-              <button onClick={() => setOpen(false)} aria-label="Close" className="text-charcoal/60 hover:text-charcoal">
-                <X size={16} />
+        <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+          <Search size={16} className="shrink-0 text-charcoal/60" />
+          <input
+            ref={inputRef}
+            value={q}
+            onChange={(e) => { setQ(e.target.value); setActive(0); }}
+            onKeyDown={onKeyDown}
+            placeholder="Search rings, necklaces, gold, bridal…"
+            aria-label="Search designs"
+            aria-autocomplete="list"
+            className="w-full bg-transparent text-sm text-charcoal outline-none placeholder:text-charcoal/40"
+          />
+          <button onClick={() => setOpen(false)} aria-label="Close" className="shrink-0 text-charcoal/60 hover:text-charcoal">
+            <X size={16} />
+          </button>
+        </div>
+        <ul role="listbox" className="max-h-[55vh] overflow-y-auto py-2">
+          {results.length ? results.map((s, i) => (
+            <li key={`${s.to}-${i}`}>
+              <button
+                onMouseEnter={() => setActive(i)}
+                onClick={() => go(s)}
+                role="option"
+                aria-selected={i === active}
+                className={cn(
+                  "flex w-full items-center justify-between gap-4 px-4 py-2.5 text-left transition-colors",
+                  i === active ? "bg-secondary" : "hover:bg-secondary/60",
+                )}
+              >
+                <div>
+                  <div className="text-sm text-charcoal">{s.label}</div>
+                  {s.sub && <div className="text-[0.65rem] uppercase tracking-[0.22em] text-charcoal/50">{s.sub}</div>}
+                </div>
+                <ChevronRight size={14} className="text-charcoal/40" />
               </button>
-            </div>
-            <ul role="listbox" className="max-h-[60vh] overflow-y-auto py-2">
-              {results.length ? results.map((s, i) => (
-                <li key={`${s.to}-${i}`}>
-                  <button
-                    onMouseEnter={() => setActive(i)}
-                    onClick={() => go(s)}
-                    role="option"
-                    aria-selected={i === active}
-                    className={cn(
-                      "flex w-full items-center justify-between gap-4 px-4 py-2.5 text-left transition-colors",
-                      i === active ? "bg-secondary" : "hover:bg-secondary/60",
-                    )}
-                  >
-                    <div>
-                      <div className="text-sm text-charcoal">{s.label}</div>
-                      {s.sub && <div className="text-[0.65rem] uppercase tracking-[0.22em] text-charcoal/50">{s.sub}</div>}
-                    </div>
-                    <ChevronRight size={14} className="text-charcoal/40" />
-                  </button>
-                </li>
-              )) : (
-                <li className="px-4 py-6 text-center text-sm text-muted-foreground">No matches — try a broader term.</li>
-              )}
-            </ul>
-            <div className="border-t border-border px-4 py-2">
-              <Link to="/search" onClick={() => setOpen(false)} className="text-[0.7rem] uppercase tracking-[0.28em] text-wine hover:text-wine-deep">
-                Open full search →
-              </Link>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+            </li>
+          )) : (
+            <li className="px-4 py-6 text-center text-sm text-muted-foreground">No matches — try a broader term.</li>
+          )}
+        </ul>
+        <div className="border-t border-border px-4 py-2">
+          <Link to="/search" onClick={() => setOpen(false)} className="text-[0.7rem] uppercase tracking-[0.28em] text-wine hover:text-wine-deep">
+            Open full search →
+          </Link>
+        </div>
+      </motion.div>
+    </>
   );
 }

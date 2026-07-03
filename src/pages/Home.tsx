@@ -40,7 +40,7 @@ function Hero() {
   const textY = useTransform(scrollYProgress, [0, 1], [0, -60]);
 
   return (
-    <section ref={ref} className="relative h-[100svh] min-h-[500px] md:min-h-[720px] w-full overflow-hidden bg-charcoal">
+    <section ref={ref} className="relative h-[100svh] min-h-[720px] w-full overflow-hidden bg-charcoal">
       <motion.div style={{ scale, y }} className="absolute inset-0">
         <img
           src={IMG.hero}
@@ -101,9 +101,9 @@ function Hero() {
         initial={{ opacity: 0, x: 30 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 2.3, duration: 1.2, ease: "easeOut" }}
-        className="absolute right-6 top-1/2 -translate-y-1/2 md:right-10 xl:right-16"
+        className="absolute right-6 top-1/2 hidden -translate-y-1/2 lg:right-10 lg:block xl:right-16"
       >
-        <div className="group w-40 sm:w-48 md:w-56 border border-ivory/30 bg-ivory/10 p-3 backdrop-blur-md transition-all hover:bg-ivory/20 hover:scale-105 cursor-pointer">
+        <div className="group w-56 border border-ivory/30 bg-ivory/10 p-3 backdrop-blur-md transition-all hover:bg-ivory/20 hover:scale-105 cursor-pointer">
           <div className="overflow-hidden">
             <img src={IMG.design.earrings} alt="Kundan jhumka" className="aspect-square w-full object-cover transition-transform duration-700 group-hover:scale-110" />
           </div>
