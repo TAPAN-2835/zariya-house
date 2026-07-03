@@ -96,54 +96,20 @@ function Hero() {
         </motion.div>
       </motion.div>
 
-      {/* Floating parallax cards */}
+      {/* Floating parallax card */}
       <motion.div
-        initial={{ opacity: 0, x: 50, y: 30 }}
-        animate={{ opacity: 1, x: 0, y: 0 }}
+        initial={{ opacity: 0, x: 30 }}
+        animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 2.3, duration: 1.2, ease: "easeOut" }}
-        className="absolute right-[5%] top-[20%] hidden w-52 -rotate-3 lg:block xl:right-[10%]"
+        className="absolute right-6 top-1/2 hidden -translate-y-1/2 lg:right-10 lg:block xl:right-16"
       >
-        <div className="group border border-ivory/30 bg-ivory/10 p-3 backdrop-blur-md transition-all hover:bg-ivory/20 hover:scale-105 cursor-pointer">
+        <div className="group w-56 border border-ivory/30 bg-ivory/10 p-3 backdrop-blur-md transition-all hover:bg-ivory/20 hover:scale-105 cursor-pointer">
           <div className="overflow-hidden">
             <img src={IMG.design.earrings} alt="Kundan jhumka" className="aspect-square w-full object-cover transition-transform duration-700 group-hover:scale-110" />
           </div>
           <div className="mt-3">
             <div className="eyebrow text-gold-soft">Signature</div>
-            <div className="serif-display mt-1 text-base text-ivory">Rani Kundan Jhumka</div>
-          </div>
-        </div>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, x: -50, y: -30 }}
-        animate={{ opacity: 1, x: 0, y: 0 }}
-        transition={{ delay: 2.6, duration: 1.2, ease: "easeOut" }}
-        className="absolute left-[5%] top-[15%] hidden w-48 rotate-6 lg:block xl:left-[10%]"
-      >
-        <div className="group border border-ivory/30 bg-ivory/10 p-3 backdrop-blur-md transition-all hover:bg-ivory/20 hover:scale-105 cursor-pointer">
-          <div className="overflow-hidden">
-            <img src={IMG.design.ringMacro} alt="Diamond Ring" className="aspect-square w-full object-cover transition-transform duration-700 group-hover:scale-110" />
-          </div>
-          <div className="mt-3">
-            <div className="eyebrow text-gold-soft">Bridal</div>
-            <div className="serif-display mt-1 text-base text-ivory">Eternity Band</div>
-          </div>
-        </div>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 2.9, duration: 1.2, ease: "easeOut" }}
-        className="absolute right-[12%] bottom-[15%] hidden w-48 rotate-2 lg:block"
-      >
-        <div className="group border border-ivory/30 bg-ivory/10 p-3 backdrop-blur-md transition-all hover:bg-ivory/20 hover:scale-105 cursor-pointer">
-          <div className="overflow-hidden">
-            <img src={IMG.design.necklaceMacro} alt="Gold Necklace" className="aspect-square w-full object-cover transition-transform duration-700 group-hover:scale-110" />
-          </div>
-          <div className="mt-3">
-            <div className="eyebrow text-gold-soft">Heritage</div>
-            <div className="serif-display mt-1 text-base text-ivory">Temple Choker</div>
+            <div className="serif-display mt-1 text-lg text-ivory">Rani Kundan Jhumka</div>
           </div>
         </div>
       </motion.div>
