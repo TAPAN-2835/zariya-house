@@ -67,7 +67,7 @@ function Hero() {
 
       <motion.div
         style={{ y: textY }}
-        className="relative z-10 mx-auto flex h-full max-w-[1440px] flex-col justify-end px-6 pb-24 lg:px-10 lg:pb-32"
+        className="relative z-10 mx-auto flex h-full max-w-[1440px] flex-col justify-center px-6 pb-0 lg:px-10"
       >
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -114,17 +114,7 @@ function Hero() {
         </div>
       </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 3 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 text-ivory/70"
-      >
-        <div className="flex flex-col items-center gap-2">
-          <div className="h-8 w-px animate-pulse bg-gold-soft" />
-          <span className="eyebrow text-[0.55rem] text-ivory/60">Scroll</span>
-        </div>
-      </motion.div>
+
     </section>
   );
 }
